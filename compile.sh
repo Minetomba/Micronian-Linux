@@ -1,2 +1,2 @@
 #!/bin/bash
-gcc src/osf.c -o osf
+musl-gcc -static src/osf.c -o osf
