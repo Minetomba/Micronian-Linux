@@ -60,6 +60,8 @@ void initfs() {
 	syscall(SYS_mount, "proc", "/proc", "proc", 0, NULL);
 	syscall(SYS_mkdir, "/sys", 0555);
 	syscall(SYS_mount, "sys", "/sys", "sys", 0, NULL);
+	syscall(SYS_mkdir, "/dev", 0555);
+	syscall(SYS_mount, "dev", "/dev", "dev", 0, NULL);
 	return;
 }
 int initsys() {

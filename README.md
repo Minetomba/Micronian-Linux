@@ -11,7 +11,7 @@ To configure the system, make a file named "/etc/initconf.txt" owned by root edi
 /bin/sh
 ```
 By default, you should only use /bin and /sbin for binaries.
-All binaries in initconf.txt get launched as root, which means you might need to make a wrapper to switch users and launch a process based on file input (since arguments are not specified via initconf, initconf is just a list of paths to launch).
+All binaries in initconf.txt get launched as root, which is good because it forces user processes to never be launched under the init process, and instead be launched under something like a login manager or shell.
 
 ## Dependencies
-- POSIX-compliant Linux
+- POSIX-compliant Linux with BusyBox and TCC added.
