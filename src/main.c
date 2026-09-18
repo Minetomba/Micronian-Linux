@@ -328,7 +328,27 @@ int main(int argc, char* argv[]) {
 				if (in < 0) {
 					return 1;
 				}
-				while ((n = read(in, &c, 1)) == 1) {
+				struct stat st;
+				if (syscall(SYS_fstat, in, &st) < 0) {
+					return 1;
+				}
+				size_t prog_size = st.st_size;
+				char *prog = malloc(prog_size);
+				if (!prog) {
+					return 1;
+				}
+				size_t got = 0;
+				while (got < prog_size) {
+					ssize_t r = syscall(SYS_read, in, prog + got, prog_size - got);
+					if (r <= 0) {
+						break;
+					}
+					got += r;
+				}
+				syscall(SYS_close, in);
+				size_t pc = 0;
+				while (pc < prog_size) {
+					char c = prog[pc];
 					if (c == '1') {
 						stack[stack_pointer] = 0;
 						stack_pointer -= 1;
@@ -339,8 +359,8 @@ int main(int argc, char* argv[]) {
 					} else if (c == '4') {
 						stack[stack_pointer] += stack[stack_pointer - 1];
 					} else if (c == '5') {
-						int temp_a = stack[stack_pointer];
-						int temp_b = stack[stack_pointer - 1];
+						intptr_t temp_a = stack[stack_pointer];
+						intptr_t temp_b = stack[stack_pointer - 1];
 						stack[stack_pointer] = temp_b;
 						stack[stack_pointer - 1] = temp_a;
 					} else if (c == '6') {
@@ -354,12 +374,19 @@ int main(int argc, char* argv[]) {
 					} else if (c == '8') {
 						stack_pointer += 1;
 						stack[stack_pointer] = 1;
+					} else if (c == '9') {
+						if (stack[stack_pointer] < stack[stack_pointer - 1]) {
+							pc = stack[stack_pointer - 2];
+							continue;
+						}
 					} else {
+						free(prog);
 						syscall(SYS_write, 1, "Syntax error!\n", (intptr_t)(sizeof("Syntax error!\n") - 1));
 						return 1;
 					}
+					pc += 1;
 				}
-				syscall(SYS_close, in);
+				free(prog);
 			}
 		}
 		if (argc == 4) {
