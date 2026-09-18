@@ -1,9 +1,9 @@
-# OSF-Linux
-**O**ne-**S**-tatic-**F**ile Linux is a minimalist distribution designed to be as small and efficient as possible.
+# Micronian-Linux
+Micronian Linux is a minimalist distribution designed to be as small and efficient as possible.
 
 ## Installation
 Compile with "./compile.sh" (musl-gcc must be installed), move into /sbin, and tell the kernel for it to be PID 1.
-To shutdown the system, send SIGUSR1 to PID 1 via syscall(SYS_kill, 1, 10), making sure only the root user can send that signal and be succesful.
+To shutdown the system, send SIGUSR1 to PID 1 via syscall(SYS_kill, 1, 10), making sure only the root user can send that signal and be succesful in doing so.
 To configure the system, make a file named "/etc/initconf.txt" owned by root editable only by root, and type line by line the paths to the binaries to execute. For example, this is a very small yet functional initconf that spawns iwd, sshd, and a shell all as root:
 ```conf
 /bin/iwd
@@ -17,4 +17,4 @@ All binaries in initconf.txt get launched as root, which is good because it forc
 - POSIX-compliant Linux with BusyBox and TCC added.
 
 ## Compile-time dependencies
-- musl-gcc, bash, and Linux
+- musl-gcc, bash, and Linux.

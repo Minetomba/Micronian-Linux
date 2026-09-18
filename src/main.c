@@ -19,6 +19,7 @@
 #define PROCESS_TIMEOUT 5
 #define NOT_ROOT_ERROR "Error: Not running as root.\n"
 #define PRESYSINIT_MESSAGE "System launch!\n"
+#define USERSPACE_INIT_ERROR "Error: Binary cannot have arguments and be ran as the init system at the same time."
 
 /* Signal Handler */
 static volatile sig_atomic_t shutdown_requested = 0;
@@ -116,13 +117,21 @@ int initsys() {
 	return 0;
 }
 
-int main() {
-	if (!isroot()) {
-		syscall(SYS_write, 1, NOT_ROOT_ERROR, sizeof(NOT_ROOT_ERROR) - 1);
-		return 1;
+int main(int argc, char* argv[]) {
+	if (argc == 1) {
+		if (!isroot()) {
+			syscall(SYS_write, 1, NOT_ROOT_ERROR, sizeof(NOT_ROOT_ERROR) - 1);
+			return 1;
+		}
+		initfs();
+		syscall(SYS_write, 1, PRESYSINIT_MESSAGE, sizeof(PRESYSINIT_MESSAGE) - 1);
+		initsys();
+	} else {
+		if (getpid() == 1) {
+			syscall(SYS_write, 1, USERSPACE_INIT_ERROR, sizeof(USERSPACE_INIT_ERROR) - 1);
+			return 1;
+		}
+		// Handle stuff
 	}
-	initfs();
-	syscall(SYS_write, 1, PRESYSINIT_MESSAGE, sizeof(PRESYSINIT_MESSAGE) - 1);
-	initsys();
 	return 0;
 }
