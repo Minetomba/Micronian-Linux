@@ -363,8 +363,11 @@ int main(int argc, char* argv[]) {
 						}
 					}
 					if (in_construct == 1) {
-						if (c == 'c') {
+						if (c != '0' && c != '1' && c != '2' && c != '3' && c != '4' && c != '5' && c != '6' && c != '7' && c != '8' && c != '9' && c != '~') {
 							in_construct = 0;
+							stack_pointer += 1;
+							stack[stack_pointer] = last_construct;
+							last_construct = 0;
 							pc += 1;
 							continue;
 						} else {
@@ -374,48 +377,46 @@ int main(int argc, char* argv[]) {
 							continue;
 						}
 					}
-					if (c == '1') {
+					if (c == ',') { /* Pop */
 						stack[stack_pointer] = 0;
 						stack_pointer -= 1;
-					} else if (c == '2') {
+					} else if (c == '@') { /* Get */
 						stack[stack_pointer] = *(intptr_t*)stack[stack_pointer];
-					} else if (c == '3') {
+					} else if (c == '!') { /* Store */
 						*(intptr_t*)stack[stack_pointer] = stack[stack_pointer - 1];
-					} else if (c == '4') {
+					} else if (c == '+') { /* Add */
 						stack[stack_pointer - 1] = stack[stack_pointer - 1] + stack[stack_pointer];
 						stack_pointer -= 1;
-					} else if (c == '5') {
+					} else if (c == '/') { /* Swap2 */
 						intptr_t temp_a = stack[stack_pointer];
 						intptr_t temp_b = stack[stack_pointer - 1];
 						stack[stack_pointer] = temp_b;
 						stack[stack_pointer - 1] = temp_a;
-					} else if (c == '6') {
+					} else if (c == '&') { /* Swap3 */
 						intptr_t temp_a = stack[stack_pointer];
 						intptr_t temp_b = stack[stack_pointer - 2];
 						stack[stack_pointer] = temp_b;
 						stack[stack_pointer - 2] = temp_a;
-					} else if (c == '7') {
+					} else if (c == ':') { /* Duplicate */
 						stack_pointer += 1;
 						stack[stack_pointer] = stack[stack_pointer - 1];
-					} else if (c == '8') {
-						stack_pointer += 1;
-						stack[stack_pointer] = last_construct;
-						last_construct = 0;
-					} else if (c == '9') {
-						if (stack[stack_pointer] < stack[stack_pointer - 1]) {
+					} else if (c == '?') { /* Branch */
+						if (stack[stack_pointer - 1] < stack[stack_pointer]) {
 							pc = stack[stack_pointer - 2];
 							stack_pointer -= 3;
 							continue;
 						}
 						stack_pointer -= 3;
-					} else if (c == 'a') {
+					} else if (c == '-') { /* Subtract */
 						stack[stack_pointer - 1] = stack[stack_pointer - 1] - stack[stack_pointer];
 						stack_pointer -= 1;
-					} else if (c == 'b') {
+					} else if (c == '.') { /* Output */
 						printf("%c", (char)stack[stack_pointer]);
 						stack_pointer -= 1;
-					} else if (c == 'c') {
+					} else if (c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7' || c == '8' || c == '9' || c == '~') {
 						in_construct = 1;
+						last_construct *= 10;
+						last_construct += ((int)c) - 48;
 					} else if (c == '%') {
 						in_comment = 1;
 					}
