@@ -315,6 +315,9 @@ int main(int argc, char* argv[]) {
 			if (strcmp(argv[1], "mkdir") == 0) {
 				mkdir(argv[2], 1777);
 			}
+			if (strcmp(argv[1], "rmdir") == 0) {
+				rmdir(argv[2]);
+			}
 		}
 		if (argc == 4) {
 			if (strcmp(argv[1], "kill") == 0) {
@@ -358,7 +361,7 @@ int main(int argc, char* argv[]) {
 				return close(out);
 			}
 		}
-		// To-Implement: ln, mkdir, rmdir, chmod, chown, chgrp, chroot, dd, mcc (mini c compiler)
+		// To-Implement: ln, chmod, chown, chgrp, chroot, dd, mlc (micronian lang compiler)
 	}
 	return 0;
 }
