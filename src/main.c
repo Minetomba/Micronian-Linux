@@ -1,4 +1,5 @@
 /* Includes */
+#include <linux/limits.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -15,11 +16,11 @@
 
 /* Constants */
 #define PROCESSES_PATH "/etc/initconf.txt"
-#define MAX_COMMAND_LENGTH_CHARS 256
 #define PROCESS_TIMEOUT 5
 #define NOT_ROOT_ERROR "Error: Not running as root.\n"
 #define PRESYSINIT_MESSAGE "System launch!\n"
-#define USERSPACE_INIT_ERROR "Error: Binary cannot have arguments and be ran as the init system at the same time."
+#define USERSPACE_INIT_ERROR "Error: Binary cannot have arguments and be ran as the init system at the same time.\n"
+#define CWD_ERROR "Error: Failed to get current directory path.\n"
 
 /* Signal Handler */
 static volatile sig_atomic_t shutdown_requested = 0;
@@ -76,18 +77,17 @@ int initsys() {
 
 	/* Startup */
 	FILE *file = fopen(PROCESSES_PATH, "r");
-	char line[MAX_COMMAND_LENGTH_CHARS];
+	char line[PATH_MAX];
 	pid_t pid;
 	while (fgets(line, sizeof(line), file)) {
 		line[strcspn(line, "\n")] = 0;
 		printf("[ ... ] \"%s\"\n", line);
 		pid = fork();
 		if (pid == 0) {
+			printf("[ OK ] pid %d\n", pid);
 			char *args[] = {line, NULL};
 			execvp(line, args);
 			_exit(1);
-		} else {
-			printf("[ OK ] pid %d\n", pid);
 		}
 	}
 	fclose(file);
@@ -131,7 +131,20 @@ int main(int argc, char* argv[]) {
 			syscall(SYS_write, 1, USERSPACE_INIT_ERROR, sizeof(USERSPACE_INIT_ERROR) - 1);
 			return 1;
 		}
-		// Handle stuff
+		if (argc == 2) {
+			if (strcmp(argv[1], "ls") == 0) {
+				struct dirent *e;
+				char cwd[PATH_MAX];
+				if (getcwd(cwd, sizeof(cwd)) != NULL) {
+					DIR *d = opendir(cwd);
+					while ((e=readdir(d))) {
+						printf("%c - %s\n", e->d_type, (char*)e->d_name);
+					}
+				} else {
+					printf(CWD_ERROR);
+				}
+			}
+		}
 	}
 	return 0;
 }
