@@ -1,4 +1,5 @@
 /* Includes */
+#include <stdlib.h>
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
@@ -140,9 +141,37 @@ int main(int argc, char* argv[]) {
 					while ((e=readdir(d))) {
 						printf("%s\n", (char*)e->d_name);
 					}
+					closedir(d);
 				} else {
 					printf(CWD_ERROR);
 				}
+			}
+			if (strcmp(argv[1], "echo") == 0) {
+				printf("\n");
+			}
+			if (strcmp(argv[1], "ps") == 0) {
+				struct dirent *e;
+				DIR *d = opendir("/proc");
+				while ((e=readdir(d))) {
+					if (isdigit((unsigned char)e->d_name[0]) != 0) {
+						printf("%s > ", e->d_name);
+						fflush(stdout);
+						char link[64];
+						char buf[PATH_MAX];
+						snprintf(link, sizeof(link), "/proc/%d/exe", atoi(e->d_name));
+						ssize_t len = readlink(link, buf, PATH_MAX - 1);
+						if (len == -1) {
+							printf("no command\n");
+							continue;
+						}
+						buf[len] = '\0';
+						printf("%s\n", buf);
+					}
+				}
+				closedir(d);
+			}
+			if (strcmp(argv[1], "sh") == 0) {
+				
 			}
 		}
 	}
