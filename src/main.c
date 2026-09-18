@@ -137,6 +137,9 @@ int main(int argc, char* argv[]) {
 			return 1;
 		}
 		if (argc == 2) {
+			if (strcmp(argv[1], "sync") == 0) {
+				sync();
+			}
 			if (strcmp(argv[1], "ls") == 0) {
 				struct dirent *e;
 				char cwd[PATH_MAX];
@@ -274,6 +277,29 @@ int main(int argc, char* argv[]) {
 				}
 			}
 		}
+		if (argc == 3) {
+			if (strcmp(argv[1], "echo") == 0) {
+				printf("%s", argv[2]);
+			}
+			if (strcmp(argv[1], "ls") == 0) {
+				struct dirent *e;
+				DIR *d = opendir(argv[2]);
+				while ((e=readdir(d))) {
+					printf("%s\n", (char*)e->d_name);
+				}
+				closedir(d);
+			}
+			if (strcmp(argv[1], "cat") == 0) {
+				char line[PATH_MAX];
+				FILE *file = fopen(argv[2], "r");
+				while (fgets(line, sizeof(line), file)) {
+					line[strcspn(line, "\n")] = 0;
+					printf("%s\n", line);
+				}
+				fclose(file);
+			}
+		}
+		// To-Implement: cp, mv, rm, ln, mkdir, rmdir, touch, chmod, chown, chgrp, chroot, su, dd
 	}
 	return 0;
 }
