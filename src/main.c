@@ -319,11 +319,15 @@ int main(int argc, char* argv[]) {
 			if (strcmp(argv[1], "rmdir") == 0) {
 				rmdir(argv[2]);
 			}
-			if (strcmp(argv[1], "sli") == 0) { // Stack language interpreter (sli)
+			if (strcmp(argv[1], "msli") == 0) { // Micronian stack language interpreter (msli)
 				intptr_t stack[16];
 				intptr_t stack_pointer = 0;
 				char c;
 				intptr_t n;
+				size_t pc = 0;
+				int in_construct = 0;
+				int in_comment = 0;
+				int last_construct = 0;
 				intptr_t in = syscall(SYS_open, argv[2], O_RDONLY);
 				if (in < 0) {
 					return 1;
@@ -346,9 +350,30 @@ int main(int argc, char* argv[]) {
 					got += r;
 				}
 				syscall(SYS_close, in);
-				size_t pc = 0;
 				while (pc < prog_size) {
 					char c = prog[pc];
+					if (in_comment) {
+						if (c == '%') {
+							in_comment = 0;
+							pc += 1;
+							continue;
+						} else {
+							pc += 1;
+							continue;
+						}
+					}
+					if (in_construct == 1) {
+						if (c == 'c') {
+							in_construct = 0;
+							pc += 1;
+							continue;
+						} else {
+							last_construct *= 10;
+							last_construct += ((int)c) - 48;
+							pc += 1;
+							continue;
+						}
+					}
 					if (c == '1') {
 						stack[stack_pointer] = 0;
 						stack_pointer -= 1;
@@ -357,15 +382,16 @@ int main(int argc, char* argv[]) {
 					} else if (c == '3') {
 						*(intptr_t*)stack[stack_pointer] = stack[stack_pointer - 1];
 					} else if (c == '4') {
-						stack[stack_pointer] += stack[stack_pointer - 1];
+						stack[stack_pointer - 1] = stack[stack_pointer - 1] + stack[stack_pointer];
+						stack_pointer -= 1;
 					} else if (c == '5') {
 						intptr_t temp_a = stack[stack_pointer];
 						intptr_t temp_b = stack[stack_pointer - 1];
 						stack[stack_pointer] = temp_b;
 						stack[stack_pointer - 1] = temp_a;
 					} else if (c == '6') {
-						int temp_a = stack[stack_pointer];
-						int temp_b = stack[stack_pointer - 2];
+						intptr_t temp_a = stack[stack_pointer];
+						intptr_t temp_b = stack[stack_pointer - 2];
 						stack[stack_pointer] = temp_b;
 						stack[stack_pointer - 2] = temp_a;
 					} else if (c == '7') {
@@ -373,21 +399,29 @@ int main(int argc, char* argv[]) {
 						stack[stack_pointer] = stack[stack_pointer - 1];
 					} else if (c == '8') {
 						stack_pointer += 1;
-						stack[stack_pointer] = 1;
+						stack[stack_pointer] = last_construct;
+						last_construct = 0;
 					} else if (c == '9') {
 						if (stack[stack_pointer] < stack[stack_pointer - 1]) {
 							pc = stack[stack_pointer - 2];
+							stack_pointer -= 3;
 							continue;
 						}
+						stack_pointer -= 3;
 					} else if (c == 'a') {
-						stack[stack_pointer] -= stack[stack_pointer - 1];
+						stack[stack_pointer - 1] = stack[stack_pointer - 1] - stack[stack_pointer];
+						stack_pointer -= 1;
+					} else if (c == 'b') {
+						printf("%c", (char)stack[stack_pointer]);
+						stack_pointer -= 1;
+					} else if (c == 'c') {
+						in_construct = 1;
+					} else if (c == '%') {
+						in_comment = 1;
 					}
 					pc += 1;
 				}
 				free(prog);
-				for (int i; i < sizeof(stack) / 8; i++) {
-					printf("%ld\n", stack[i]);
-				}
 			}
 		}
 		if (argc == 4) {
