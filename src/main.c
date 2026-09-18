@@ -356,6 +356,7 @@ int main(int argc, char* argv[]) {
 						stack[stack_pointer] = 1;
 					} else {
 						syscall(SYS_write, 1, "Syntax error!\n", (intptr_t)(sizeof("Syntax error!\n") - 1));
+						return 1;
 					}
 				}
 				syscall(SYS_close, in);
