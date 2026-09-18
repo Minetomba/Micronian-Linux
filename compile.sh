@@ -1,3 +1,3 @@
 #!/bin/bash
-musl-gcc -static src/main.c -o micronian-linux
-strip micronian-linux
+musl-gcc -static src/main.c -o micronium-linux
+strip micronium-linux

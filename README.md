@@ -1,5 +1,5 @@
-# Micronian-Linux
-Micronian Linux is a minimalist distribution designed to be as small and efficient as possible.
+# Micronium-Linux
+Micronium Linux is a minimalist distribution designed to be as small and efficient as possible.
 
 ## Installation
 Compile with "./compile.sh" (musl-gcc must be installed), move into /sbin, and tell the kernel for it to be PID 1.
@@ -19,5 +19,5 @@ All binaries in initconf.txt get launched as root, which is good because it forc
 ## Compile-time dependencies
 - musl-gcc, bash, and Linux.
 
-## Micronian Stack Language Interpreter
+## Micronium Stack Language Interpreter
 - Write it however you want. The interpreter only reads numbers and operators and ignores everything else, so you can write "push 5 and 48 and add them together + and then print them out ." and "5 48 + ." and it would do the same thing.
