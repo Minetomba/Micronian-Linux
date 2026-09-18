@@ -379,14 +379,15 @@ int main(int argc, char* argv[]) {
 							pc = stack[stack_pointer - 2];
 							continue;
 						}
-					} else {
-						free(prog);
-						syscall(SYS_write, 1, "Syntax error!\n", (intptr_t)(sizeof("Syntax error!\n") - 1));
-						return 1;
+					} else if (c == 'a') {
+						stack[stack_pointer] -= stack[stack_pointer - 1];
 					}
 					pc += 1;
 				}
 				free(prog);
+				for (int i; i < sizeof(stack) / 8; i++) {
+					printf("%ld\n", stack[i]);
+				}
 			}
 		}
 		if (argc == 4) {
