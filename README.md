@@ -14,7 +14,7 @@ By default, you should only use /bin and /sbin for binaries.
 All binaries in initconf.txt get launched as root, which is good because it forces user processes to never be launched under the init process, and instead be launched under something like a login manager or shell.
 
 ## Runtime dependencies
-- POSIX-compliant Linux with BusyBox and TCC added.
+- POSIX-compliant Linux.
 
 ## Compile-time dependencies
 - musl-gcc, bash, and Linux.

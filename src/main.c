@@ -3,11 +3,13 @@
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/syscall.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/prctl.h>
 #include <sys/reboot.h>
 #include <ctype.h>
+#include <sys/sendfile.h>
 #include <sys/stat.h>
 #include <sys/mount.h>
 #include <dirent.h>
@@ -151,6 +153,7 @@ int main(int argc, char* argv[]) {
 					closedir(d);
 				} else {
 					printf(CWD_ERROR);
+					return 1;
 				}
 			}
 			if (strcmp(argv[1], "echo") == 0) {
@@ -298,8 +301,64 @@ int main(int argc, char* argv[]) {
 				}
 				fclose(file);
 			}
+			if (strcmp(argv[1], "touch") == 0) {
+				int fd = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC, 0666);
+				if (fd < 0) {
+					printf("Error: Cannot open file.\n");
+					return 1;
+				}
+				close(fd);
+			}
+			if (strcmp(argv[1], "rm") == 0) {
+				remove(argv[2]);
+			}
+			if (strcmp(argv[1], "mkdir") == 0) {
+				mkdir(argv[2], 1777);
+			}
 		}
-		// To-Implement: cp, mv, rm, ln, mkdir, rmdir, touch, chmod, chown, chgrp, chroot, su, dd
+		if (argc == 4) {
+			if (strcmp(argv[1], "kill") == 0) {
+				syscall(SYS_kill, atoi(argv[2]), atoi(argv[3]));
+			}
+			if (strcmp(argv[1], "rename") == 0) {
+				rename(argv[2], argv[3]);
+			}
+			if (strcmp(argv[1], "cp") == 0) {
+				int in = open(argv[2], O_RDONLY);
+				if (in < 0) {
+					printf("Error: Cannot open source file.");
+					return 1;
+				}
+				int out = open(argv[3], O_WRONLY | O_CREAT | O_TRUNC, 0666);
+				if (out < 0) {
+					printf("Error: Cannot open destination file.");
+					close(in);
+					return 1;
+				}
+				off_t off;
+				struct stat st;
+				if (fstat(in, &st) < 0) {
+					printf("Error: Error on fstat.");
+					close(in);
+					close(out);
+					return 1;
+				}
+				off_t remaining = st.st_size;
+				while (remaining > 0) {
+					ssize_t n = sendfile(out, in, &off, remaining);
+					if (n < 0) {
+						printf("Error: Error on sendfile.");
+						close(in);
+						close(out);
+						return 1;
+					}
+					remaining -= n;
+				}
+				close(in);
+				return close(out);
+			}
+		}
+		// To-Implement: ln, mkdir, rmdir, chmod, chown, chgrp, chroot, dd, mcc (mini c compiler)
 	}
 	return 0;
 }
