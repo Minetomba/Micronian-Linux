@@ -138,7 +138,7 @@ int main(int argc, char* argv[]) {
 				if (getcwd(cwd, sizeof(cwd)) != NULL) {
 					DIR *d = opendir(cwd);
 					while ((e=readdir(d))) {
-						printf("%c - %s\n", e->d_type, (char*)e->d_name);
+						printf("%s\n", (char*)e->d_name);
 					}
 				} else {
 					printf(CWD_ERROR);
