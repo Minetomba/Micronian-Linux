@@ -16,6 +16,7 @@
 #include <syscall.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <stdint.h>
 
 /* Constants */
 #define PROCESSES_PATH "/etc/initconf.txt"
@@ -318,6 +319,47 @@ int main(int argc, char* argv[]) {
 			if (strcmp(argv[1], "rmdir") == 0) {
 				rmdir(argv[2]);
 			}
+			if (strcmp(argv[1], "sli") == 0) { // Stack language interpreter (sli)
+				intptr_t stack[16];
+				intptr_t stack_pointer = 0;
+				char c;
+				intptr_t n;
+				intptr_t in = syscall(SYS_open, argv[2], O_RDONLY);
+				if (in < 0) {
+					return 1;
+				}
+				while ((n = read(in, &c, 1)) == 1) {
+					if (c == '1') {
+						stack[stack_pointer] = 0;
+						stack_pointer -= 1;
+					} else if (c == '2') {
+						stack[stack_pointer] = *(intptr_t*)stack[stack_pointer];
+					} else if (c == '3') {
+						*(intptr_t*)stack[stack_pointer] = stack[stack_pointer - 1];
+					} else if (c == '4') {
+						stack[stack_pointer] += stack[stack_pointer - 1];
+					} else if (c == '5') {
+						int temp_a = stack[stack_pointer];
+						int temp_b = stack[stack_pointer - 1];
+						stack[stack_pointer] = temp_b;
+						stack[stack_pointer - 1] = temp_a;
+					} else if (c == '6') {
+						int temp_a = stack[stack_pointer];
+						int temp_b = stack[stack_pointer - 2];
+						stack[stack_pointer] = temp_b;
+						stack[stack_pointer - 2] = temp_a;
+					} else if (c == '7') {
+						stack_pointer += 1;
+						stack[stack_pointer] = stack[stack_pointer - 1];
+					} else if (c == '8') {
+						stack_pointer += 1;
+						stack[stack_pointer] = 1;
+					} else {
+						syscall(SYS_write, 1, "Syntax error!\n", (intptr_t)(sizeof("Syntax error!\n") - 1));
+					}
+				}
+				syscall(SYS_close, in);
+			}
 		}
 		if (argc == 4) {
 			if (strcmp(argv[1], "kill") == 0) {
@@ -329,19 +371,19 @@ int main(int argc, char* argv[]) {
 			if (strcmp(argv[1], "cp") == 0) {
 				int in = open(argv[2], O_RDONLY);
 				if (in < 0) {
-					printf("Error: Cannot open source file.");
+					printf("Error: Cannot open source file.\n");
 					return 1;
 				}
 				int out = open(argv[3], O_WRONLY | O_CREAT | O_TRUNC, 0666);
 				if (out < 0) {
-					printf("Error: Cannot open destination file.");
+					printf("Error: Cannot open destination file.\n");
 					close(in);
 					return 1;
 				}
 				off_t off;
 				struct stat st;
 				if (fstat(in, &st) < 0) {
-					printf("Error: Error on fstat.");
+					printf("Error: Error on fstat.\n");
 					close(in);
 					close(out);
 					return 1;
@@ -350,7 +392,7 @@ int main(int argc, char* argv[]) {
 				while (remaining > 0) {
 					ssize_t n = sendfile(out, in, &off, remaining);
 					if (n < 0) {
-						printf("Error: Error on sendfile.");
+						printf("Error: Error on sendfile.\n");
 						close(in);
 						close(out);
 						return 1;
@@ -361,7 +403,7 @@ int main(int argc, char* argv[]) {
 				return close(out);
 			}
 		}
-		// To-Implement: ln, chmod, chown, chgrp, chroot, dd, mlc (micronian lang compiler)
+		// To-Implement: ln, chmod, chown, chgrp, chroot, dd
 	}
 	return 0;
 }
