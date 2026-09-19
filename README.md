@@ -20,7 +20,7 @@ All binaries in initconf.txt get launched as root, which is good because it forc
 - musl-gcc, bash, and Linux.
 
 ## Features
-Micronium-Linux is not an init system, it is more than that, as it contains most actually used binaries busybox would contain (without all the macro slop it has), hence why it is so small yet combining everything from an init system to gnu utils to its own programming language in one single 500-line C file.
+Micronium-Linux is not an init system, it is more than that, as it contains most actually used binaries busybox would contain (without all the macro slop it has), hence why it is so small yet combining everything from an init system to gnu utils to its own forth-like stack programming language in one single 500-line C file.
 
 ## Micronium Stack Language Interpreter
 - Write it however you want. The interpreter only reads numbers and operators and ignores everything else, so you can write "push 5 and 48 and add them together + and then print them out ." and "5 48 + ." and it would do the same thing.
