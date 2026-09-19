@@ -320,7 +320,7 @@ int main(int argc, char* argv[]) {
 				rmdir(argv[2]);
 			}
 			if (strcmp(argv[1], "msli") == 0) { // Micronium stack language interpreter (msli)
-				intptr_t stack[16];
+				intptr_t stack[64];
 				intptr_t stack_pointer = 0;
 				char c;
 				intptr_t n;
@@ -416,6 +416,9 @@ int main(int argc, char* argv[]) {
 							continue;
 						}
 						stack_pointer -= 3;
+					} else if (c == '$') { /* Stack base address */
+						stack_pointer += 1;
+						stack[stack_pointer] = (intptr_t)&stack[0];
 					} else if (c == '.') { /* Output */
 						printf("%c", (char)stack[stack_pointer]);
 						stack_pointer -= 1;
